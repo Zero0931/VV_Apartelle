@@ -33,7 +33,7 @@ export function AvailabilityGrid({
       <table className="w-full border-separate border-spacing-0 text-sm">
         <thead>
           <tr>
-            <th className="sticky left-0 z-20 min-w-[112px] border-b border-r border-line bg-surface px-3 py-2 text-left text-xs font-medium text-muted">
+            <th className="sticky left-0 z-20 w-16 min-w-16 border-b border-r border-line bg-surface px-2 py-2 text-left text-xs font-medium text-muted sm:w-auto sm:min-w-[112px] sm:px-3">
               Room
             </th>
             {dates.map((d) => {
@@ -43,7 +43,7 @@ export function AvailabilityGrid({
                 <th
                   key={d}
                   className={cn(
-                    "min-w-[76px] border-b border-line px-1 py-2 text-center font-normal",
+                    "min-w-[52px] border-b border-line px-0.5 py-2 text-center font-normal sm:min-w-[76px] sm:px-1",
                     weekend && "bg-paper",
                   )}
                 >
@@ -65,12 +65,12 @@ export function AvailabilityGrid({
               <th
                 scope="row"
                 className={cn(
-                  "sticky left-0 z-10 border-b border-r border-line px-3 py-2 text-left font-normal",
+                  "sticky left-0 z-10 max-w-16 border-b border-r border-line px-2 py-2 text-left font-normal sm:max-w-none sm:px-3",
                   highlightRoom === room.id ? "bg-accent-soft" : "bg-surface",
                 )}
               >
-                <span className="block font-semibold">{room.name}</span>
-                <span className="block text-xs text-muted">{room.tagline}</span>
+                <span className="line-clamp-2 break-words text-xs font-semibold sm:text-sm">{room.name}</span>
+                <span className="hidden text-xs text-muted sm:block">{room.tagline}</span>
               </th>
               {dates.map((d) => {
                 const cell = availability.cells[room.id]?.[d];
@@ -78,7 +78,7 @@ export function AvailabilityGrid({
                 const isSel = selected.has(cellKey(room.id, d));
                 const selectable = cell.status === "available";
                 return (
-                  <td key={d} className="border-b border-line p-1">
+                  <td key={d} className="border-b border-line p-0.5 sm:p-1">
                     {selectable ? (
                       <button
                         type="button"
@@ -86,13 +86,13 @@ export function AvailabilityGrid({
                         aria-pressed={isSel}
                         aria-label={`${room.name}, night of ${formatDate(d)}, ${formatPeso(cell.rate)}${isSel ? ", selected" : ""}`}
                         className={cn(
-                          "flex h-14 w-full flex-col items-center justify-center rounded-lg border text-xs transition-colors",
+                          "flex h-12 w-full flex-col items-center justify-center rounded-lg border text-xs transition-colors sm:h-14",
                           isSel
                             ? "border-ink bg-ink text-white"
                             : "border-line bg-surface hover:border-ink hover:bg-paper",
                         )}
                       >
-                        {isSel ? <Check className="size-4" /> : <span className="text-[10px] text-ok">Open</span>}
+                        {isSel ? <Check className="size-4" /> : <span className="hidden text-[10px] text-ok sm:inline">Open</span>}
                         <span className={cn("font-semibold", !isSel && cell.overridden && "text-accent")}>
                           ₱{cell.rate.toLocaleString()}
                         </span>
@@ -100,7 +100,7 @@ export function AvailabilityGrid({
                     ) : (
                       <div
                         className={cn(
-                          "flex h-14 w-full items-center justify-center rounded-lg text-[11px] font-medium",
+                          "flex h-12 w-full items-center justify-center rounded-lg text-[11px] font-medium sm:h-14",
                           cell.status === "booked" && "hatch bg-paper text-subtle",
                           cell.status === "held" && "bg-warn-soft text-warn",
                           cell.status === "my-hold" && "bg-info-soft text-info",

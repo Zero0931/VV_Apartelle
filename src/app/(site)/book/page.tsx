@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { ArrowRight, CalendarRange, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { useAuth, useQuery, useStore } from "@/lib/data/provider";
 import { addDaysKey, cn, daysBetweenKeys, formatDate, formatPeso, todayKey } from "@/lib/format";
 import type { BookingNight } from "@/lib/types";
@@ -11,7 +11,7 @@ import { AvailabilityGrid, cellKey, GridLegend } from "@/components/availability
 import { StaySummary } from "@/components/stay-summary";
 import { HoldCountdown } from "@/components/hold-countdown";
 import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/form";
+import { DateRangePicker } from "@/components/date-range-picker";
 import { Card } from "@/components/ui/card";
 import { FullPageLoader } from "@/components/ui/spinner";
 import { errorMessage, useToast } from "@/components/ui/toast";
@@ -84,6 +84,7 @@ export default function BookPage() {
   if (!data) return <FullPageLoader />;
   const { availability, settings, hold } = data;
   const lastStart = addDaysKey(today, settings.bookingWindowDays - VISIBLE_DAYS);
+  const windowEnd = addDaysKey(today, settings.bookingWindowDays);
   const dates = availability.dates.filter((d) => d >= start).slice(0, VISIBLE_DAYS);
   const total = nights.reduce((s, n) => s + n.rate, 0);
   const bookableRooms = availability.rooms.filter((r) => r.active);
@@ -103,6 +104,7 @@ export default function BookPage() {
 
   const applyQuick = () => {
     const count = daysBetweenKeys(quick.checkIn, quick.checkOut);
+    if (quick.checkIn < today || quick.checkOut > windowEnd) return toast("Pick dates within the booking window.", "bad");
     if (count < 1) return toast("Check-out must be after check-in.", "bad");
     if (!quick.rooms.length) return toast("Choose at least one room.", "bad");
     const next = new Set(selected);
@@ -166,38 +168,18 @@ export default function BookPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0 space-y-4">
           {/* Quick select */}
-          <Card className="p-4">
-            <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-              <CalendarRange className="size-4 text-accent" /> Quick select a date range
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-[1fr_1fr_2fr_auto] sm:items-end">
-              <Field label="Check-in">
-                <Input
-                  type="date"
-                  min={today}
-                  max={addDaysKey(today, settings.bookingWindowDays - 1)}
-                  value={quick.checkIn}
-                  onChange={(e) =>
-                    setQuick((q) => ({
-                      ...q,
-                      checkIn: e.target.value,
-                      checkOut: q.checkOut <= e.target.value ? addDaysKey(e.target.value, 1) : q.checkOut,
-                    }))
-                  }
-                />
-              </Field>
-              <Field label="Check-out">
-                <Input
-                  type="date"
-                  min={addDaysKey(quick.checkIn, 1)}
-                  max={addDaysKey(today, settings.bookingWindowDays)}
-                  value={quick.checkOut}
-                  onChange={(e) => setQuick((q) => ({ ...q, checkOut: e.target.value }))}
-                />
-              </Field>
-              <fieldset className="col-span-2 sm:col-span-1">
-                <legend className="mb-1.5 text-sm font-medium">Rooms</legend>
-                <div className="flex flex-wrap gap-1.5">
+          <Card className="p-3 sm:p-4">
+            <p className="mb-2 text-sm font-medium">Pick dates</p>
+            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-3">
+              <DateRangePicker
+                checkIn={quick.checkIn}
+                checkOut={quick.checkOut}
+                min={today}
+                max={windowEnd}
+                onChange={(r) => setQuick((q) => ({ ...q, ...r }))}
+              />
+              <div className="flex items-center gap-2">
+                <div role="group" aria-label="Rooms" className="flex min-w-0 flex-1 flex-wrap gap-1.5">
                   {bookableRooms.map((r) => {
                     const on = quick.rooms.includes(r.id);
                     return (
@@ -212,7 +194,7 @@ export default function BookPage() {
                           }))
                         }
                         className={cn(
-                          "h-10 rounded-lg border px-3 text-sm transition",
+                          "h-8 rounded-full border px-2.5 text-xs transition sm:h-10 sm:px-3 sm:text-sm",
                           on ? "border-ink bg-ink text-white" : "border-line-strong bg-surface hover:border-ink",
                         )}
                       >
@@ -221,10 +203,10 @@ export default function BookPage() {
                     );
                   })}
                 </div>
-              </fieldset>
-              <Button variant="secondary" onClick={applyQuick} className="col-span-2 sm:col-span-1">
-                Select
-              </Button>
+                <Button size="sm" onClick={applyQuick} className="shrink-0 sm:h-10">
+                  Select
+                </Button>
+              </div>
             </div>
           </Card>
 

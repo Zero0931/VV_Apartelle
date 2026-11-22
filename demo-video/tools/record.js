@@ -217,7 +217,7 @@ const beats = [
   const only = process.argv[3] ? Number(process.argv[3]) : null; // debug: stop after N beats
   const browser = await chromium.launch();
   // Reset demo data first in a throwaway context so every run starts the same.
-  const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1.5, recordVideo: { dir: path.join(DIR, 'raw'), size: { width: 1920, height: 1080 } } });
+  const ctx = await browser.newContext({ viewport: { width: W, height: H }, recordVideo: { dir: path.join(DIR, 'raw'), size: { width: W, height: H } } });
   await ctx.addInitScript(INIT);
   page = await ctx.newPage();
   const t0 = Date.now();

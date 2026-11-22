@@ -8,4 +8,4 @@ Chapters: welcome → guest website → the three account types → a guest book
 `tools/` holds the scripts that made it (Playwright drives the real app; edge-tts reads the narration).
 1. `npm run build && npm start`
 2. `node tools/record.js dump` writes the narration, then `python3 tools/tts.py` makes the voice clips
-3. `node tools/record.js record` records the screen, then mux the audio with ffmpeg
+3. `node tools/record.js record` records the screen, then mux the audio with ffmpeg and upscale to 1920x1080 (scale=1920:1080:flags=lanczos)
